@@ -32,7 +32,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    Advertising: {
+    Isadvertising: {
       type: Boolean,
       default: false,
     },
@@ -41,12 +41,12 @@ const productSchema = new mongoose.Schema(
       default: 0,
     },
 
-    inStock: {
+    Isstock: {
       type: Boolean,
       default: true,
     },
 
-    isDeleted: {
+    Isdeleted: {
       type: Boolean,
       default: false,
     },

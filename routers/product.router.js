@@ -1,15 +1,39 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const productController = require('../controllers/product.controller');
-const upload = require('../utili/multerConfig.js');
-const { Isadmin, Isuser, authMW } = require('../utili/auth.js');
-router.post('/',Isadmin,upload.single('productImage'),productController.createProduct);
-router.get('/',authMW,productController.getProducts);
-router.get('/active',authMW,productController.getActiveProdects);
-router.post('/one',Isuser,productController.produect);
-router.post('/search',authMW,productController.searchProduct);
-router.post('/del',Isadmin,productController.deleteProductById);
-router.post('/stock',Isadmin,productController.Stock);
-router.post('/edit',Isadmin,productController.updateProductById);
+const productController = require("../controllers/product.controller");
+const upload = require("../middlewares/multer.middle");
+const auth = require("../middlewares/auth.middle");
+const role = require("../middlewares/role.middle");
+router.post(
+  "/",
+  role.checkRole(["admin"]),
+  upload.single("productImage"),
+  productController.createProduct
+);
+router.get("/", auth.verifyToken, productController.getProducts);
+router.get("/active", auth.verifyToken, productController.getActiveProdects);
+router.post("/one", auth.verifyToken, productController.produect);
+router.post("/search", auth.verifyToken, productController.searchProduct);
+router.post(
+  "/del",
+  role.checkRole(["admin"]),
+  productController.deleteProductById
+);
+router.post("/stock", role.checkRole(["admin"]), productController.Stock);
+router.post(
+  "/advertising",
+  role.checkRole(["admin"]),
+  productController.Advertising
+);
+router.post(
+  "/advertised",
+  auth.verifyToken,
+  productController.getAdvertisingProdects
+);
+router.post(
+  "/edit",
+  role.checkRole(["admin"]),
+  productController.updateProductById
+);
 
-module.exports= router;
+module.exports = router;

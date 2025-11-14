@@ -1,11 +1,12 @@
-const express = require('express');
-const orderController = require('../controllers/order.controller');
-const { Isuser, Isadmin } = require('../utili/auth')
+const express = require("express");
+const orderController = require("../controllers/order.controller");
+const { checkRole } = require("../middlewares/role.middle");
 
 const Router = express.Router();
 
-Router.post('/check', Isuser, orderController.CheckOut);
-Router.post('/Myorders', Isuser, orderController.getMyOrders);
-Router.get('/Allorders', Isadmin, orderController.getAllOrders);
-Router.post('/status', Isadmin, orderController.updateOrderStatus);
+Router.post("/check", checkRole(["user"]), orderController.checkOut);
+Router.post("/Myorders", checkRole(["user"]), orderController.getMyOrders);
+Router.get("/Allorders", checkRole(["admin"]), orderController.getAllOrders);
+Router.post("/status", checkRole(["admin"]), orderController.updateOrderStatus);
+Router.post("/guest", orderController.guestOrder);
 module.exports = Router;
