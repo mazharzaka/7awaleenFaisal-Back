@@ -5,7 +5,7 @@ const productSchema = new mongoose.Schema(
     storeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "store",
-      required: true,
+      default: null,
     },
 
     name: {
@@ -23,27 +23,27 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
 
-    imageURL: {
-      type: String,
-      required: true,
-    },
-
+    imageURL: { type: String, required: true },
     category: {
       type: String,
       required: true,
     },
+
+    sale: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
+    },
+
     Isadvertising: {
       type: Boolean,
       default: false,
     },
+
     stock: {
       type: Number,
       default: 0,
-    },
-
-    Isstock: {
-      type: Boolean,
-      default: true,
     },
 
     Isdeleted: {
@@ -53,5 +53,13 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+productSchema.virtual("finalPrice").get(function () {
+  if (!this.sale || this.sale === 0) return this.price;
+  return this.price - (this.price * this.sale) / 100;
+});
+
+productSchema.set("toJSON", { virtuals: true });
+productSchema.set("toObject", { virtuals: true });
 
 module.exports = mongoose.model("product", productSchema);

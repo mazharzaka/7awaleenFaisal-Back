@@ -1,9 +1,7 @@
 exports.checkRole = (roles, checkCreator = false) => {
   return async (req, res, next) => {
     try {
-      // console.log(req.user);
-
-      if (roles.includes(req.user.role)) {
+      if (roles.includes(req.user.userType)) {
         return next();
       }
 

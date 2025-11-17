@@ -2,7 +2,12 @@ const productModel = require("../models/product.model");
 
 exports.createProduct = async (req, res) => {
   try {
-    req.body.imgeURL = req.file.path;
+    console.log(req.file.path);
+    console.log(req.body);
+    req.body.imageURL = req.file.path;
+    if (!req.body.storeId) {
+      req.body.storeId = null;
+    }
     const product = await productModel.create(req.body);
     res.status(201).json(product);
   } catch (err) {
@@ -67,11 +72,13 @@ exports.Advertising = async (req, res) => {
   }
 };
 exports.updateProductById = async (req, res) => {
-  const { id, name, desc, price, imgeURL } = req.body;
+  const { id, name, desc, price, imageURL } = req.body;
 
-  const updateFields = { name, desc, price, imgeURL };
-  // req.body.imgeURL = req.file.path;
+  const updateFields = { name, desc, price, imageURL };
 
+  if (imageURL) {
+    req.body.imageURL = req.file.path;
+  }
   const filteredFields = Object.fromEntries(
     Object.entries(updateFields).filter(
       ([_, value]) => value !== undefined && value !== ""

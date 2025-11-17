@@ -6,32 +6,36 @@ const auth = require("../middlewares/auth.middle");
 const role = require("../middlewares/role.middle");
 router.post(
   "/",
-  role.checkRole(["admin"]),
+  auth.verifyToken,
   upload.single("productImage"),
+  role.checkRole(["admin"]),
   productController.createProduct
 );
-router.get("/", auth.verifyToken, productController.getProducts);
-router.get("/active", auth.verifyToken, productController.getActiveProdects);
-router.post("/one", auth.verifyToken, productController.produect);
-router.post("/search", auth.verifyToken, productController.searchProduct);
+router.get("/", productController.getProducts);
+router.get("/active", productController.getActiveProdects);
+router.post("/one", productController.produect);
+router.post("/search", productController.searchProduct);
 router.post(
   "/del",
+  auth.verifyToken,
   role.checkRole(["admin"]),
   productController.deleteProductById
 );
 router.post("/stock", role.checkRole(["admin"]), productController.Stock);
 router.post(
   "/advertising",
+  auth.verifyToken,
   role.checkRole(["admin"]),
   productController.Advertising
 );
 router.post(
   "/advertised",
-  auth.verifyToken,
+
   productController.getAdvertisingProdects
 );
 router.post(
   "/edit",
+  auth.verifyToken,
   role.checkRole(["admin"]),
   productController.updateProductById
 );

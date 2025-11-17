@@ -4,7 +4,9 @@ const Store = require("../models/store.model");
 exports.createStore = async (req, res) => {
   try {
     if (req.file) req.body.imageURL = req.file.path;
-
+    else {
+      return res.status(400).json({ error: "Store image is required" });
+    }
     const store = await Store.create(req.body);
     res.status(201).json(store);
   } catch (err) {

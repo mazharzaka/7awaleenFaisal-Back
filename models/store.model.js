@@ -40,6 +40,10 @@ const storeSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    rateview: {
+      type: Number,
+      default: 5,
+    },
   },
   {
     timestamps: true,

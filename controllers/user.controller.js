@@ -53,13 +53,13 @@ exports.login = async (req, res) => {
       return res.status(400).json({ error: "Email not found" });
     }
 
-    const isMatch = await hashing.isMatch(password, user.password);
+    const isMatch = await hashing.comparePassword(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ error: "Password does not match" });
     }
 
     // إنشاء Access Token
-    const token = generateToken.createAccessToken({
+    const token = generateToken.generateToken({
       userId: user._id,
       name: user.name,
       userType: user.userType,
