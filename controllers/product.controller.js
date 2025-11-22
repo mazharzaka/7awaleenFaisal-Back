@@ -95,12 +95,10 @@ exports.updateProductById = async (req, res) => {
   }
 };
 exports.produect = async (req, res) => {
-  const { id } = req.body;
+  const { id } = req.params;
 
   try {
     const product = await productModel.findById(id);
-    // console.log(product);
-
     res.status(200).json(product);
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -13,7 +13,7 @@ router.post(
 );
 router.get("/", productController.getProducts);
 router.get("/active", productController.getActiveProdects);
-router.post("/one", productController.produect);
+router.get("/:id", productController.produect);
 router.post("/search", productController.searchProduct);
 router.post(
   "/del",

@@ -1,5 +1,7 @@
 const Order = require("../models/order.model");
-
+const WOrder = require("../models/whatsapp");
+const dotenv = require("dotenv");
+dotenv.config();
 // Checkout / Create Order
 exports.checkOut = async (req, res) => {
   const { userId, storeId, items, total, address, note, deliveryPartnerId } =
@@ -51,29 +53,46 @@ exports.getAllOrders = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 exports.guestOrder = async (req, res) => {
   try {
-    const { name, phone, address, productId, message } = req.body;
+    const { name, phone, productId, price, product, quantity, note } = req.body;
 
-    if (!phone || !productId) {
-      return res.status(400).json({ error: "Phone & product are required" });
-    }
+    let finalPrice = price * quantity;
+    const order = await WOrder.create({
+      name,
+      phone,
+      productId,
+      quantity,
+      note,
+      finalPrice,
+    });
 
-    // رابط واتساب
-    const whatsappMessage = `
-طلب جديد (Guest):
-الاسم: ${name || "غير محدد"}
-التليفون: ${phone}
-العنوان: ${address || "غير محدد"}
-المنتج: ${productId}
-ملاحظة: ${message || "لا يوجد"}
-    `;
+    // Generate WhatsApp message
+    const whatsappMsg = `Hello, I want to order:
+- Product: ${product}
+- Quantity: ${quantity}
+- Name: ${name}
+- Phone: ${phone}
+-finalPrice ${finalPrice}
+- Note: ${note}`;
 
-    const encoded = encodeURIComponent(whatsappMessage);
+    const encodedMsg = encodeURIComponent(whatsappMsg);
 
-    const whatsappUrl = `https://wa.me/<YOUR_PHONE>?text=${encoded}`;
+    return res.json({
+      success: true,
+      order,
+      whatsappLink: `https://wa.me/${process.env.MYPHONE}?text=${encodedMsg}`,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+exports.getAllOrdersGeust = async (req, res) => {
+  try {
+    const orders = await WOrder.find().populate("productId");
 
-    res.status(200).json({ whatsappUrl });
+    res.status(200).json(orders);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

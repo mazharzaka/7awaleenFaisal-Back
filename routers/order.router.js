@@ -9,4 +9,5 @@ Router.post("/Myorders", checkRole(["user"]), orderController.getMyOrders);
 Router.get("/Allorders", checkRole(["admin"]), orderController.getAllOrders);
 Router.post("/status", checkRole(["admin"]), orderController.updateOrderStatus);
 Router.post("/guest", orderController.guestOrder);
+Router.get("/guest", orderController.getAllOrdersGeust);
 module.exports = Router;
