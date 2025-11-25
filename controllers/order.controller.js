@@ -69,8 +69,8 @@ exports.guestOrder = async (req, res) => {
     });
 
     // Generate WhatsApp message
-    const whatsappMsg = `Hello, I want to order:
-- Product: ${product}
+    const whatsappMsg = `اهلا بكم، لدي طلب جديد عبر موقع (حوالين فيصل)7awaleenFaisal:
+- المنتج: ${product}
 - Quantity: ${quantity}
 - Name: ${name}
 - Phone: ${phone}
