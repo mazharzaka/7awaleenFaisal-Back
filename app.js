@@ -21,7 +21,6 @@ app.use(
   })
 );
 
-app.use(cors(corsOptions));
 app.use("/user", userRouter);
 app.use("/product", productRouter);
 app.use("/order", orderRouter);
