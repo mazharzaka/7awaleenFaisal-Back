@@ -12,12 +12,14 @@ app.use(express.json());
 
 dotenv.config();
 connectDB();
-
-const corsOptions = {
-  origin: "*",
-  methods: "GET,POST,PUT,DELETE",
-  allowedHeaders: "Content-Type,Authorization",
-};
+app.use(
+  cors({
+    origin: "https://7awaleen-faisal.vercel.app",
+    methods: "GET,POST,PUT,DELETE",
+    allowedHeaders: "Content-Type,Authorization",
+    credentials: true,
+  })
+);
 
 app.use(cors(corsOptions));
 app.use("/user", userRouter);
