@@ -14,7 +14,7 @@ dotenv.config();
 connectDB();
 app.use(
   cors({
-    origin: "https://7awaleen-faisal.vercel.app",
+    origin: ["https://7awaleen-faisal.vercel.app", "http://localhost:3000"],
     methods: "GET,POST,PUT,DELETE",
     allowedHeaders: "Content-Type,Authorization",
     credentials: true,
