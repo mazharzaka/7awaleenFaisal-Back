@@ -5,7 +5,7 @@ const cloudinary = require("../utils/cloudinary");
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
-    const { width, height } = { width: 300, height: 300 };
+    const { width, height } = { width: 500, height: 500 };
 
     return {
       folder: "uploads",

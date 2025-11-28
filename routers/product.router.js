@@ -7,7 +7,7 @@ const role = require("../middlewares/role.middle");
 router.post(
   "/",
   auth.verifyToken,
-  upload.single("productImage"),
+  upload.array("productImage", 4),
   role.checkRole(["admin"]),
   productController.createProduct
 );

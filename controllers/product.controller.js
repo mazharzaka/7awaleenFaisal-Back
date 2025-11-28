@@ -2,9 +2,8 @@ const productModel = require("../models/product.model");
 
 exports.createProduct = async (req, res) => {
   try {
-    console.log(req.file.path);
-    console.log(req.body);
-    req.body.imageURL = req.file.path;
+    const imagePaths = req.files.map((file) => file.path);
+    req.body.imageURL = imagePaths;
     if (!req.body.storeId) {
       req.body.storeId = null;
     }
