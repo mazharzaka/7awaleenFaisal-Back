@@ -69,7 +69,7 @@ exports.guestOrder = async (req, res) => {
     });
 
     // Generate WhatsApp message
-    const whatsappMsg = `اهلا بكم، لدي طلب جديد عبر موقع (حوالين فيصل)7awaleenFaisal:
+    const whatsappMsg = `اهلا بكم، لدي طلب جديد عبر موقع وصل wsal:
 - المنتج: ${product}
 - Quantity: ${quantity}
 - Name: ${name}
