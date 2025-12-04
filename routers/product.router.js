@@ -11,6 +11,8 @@ router.post(
   role.checkRole(["admin"]),
   productController.createProduct
 );
+router.get("/categories", productController.getcategoriesProdects);
+router.get("/subcategories", productController.getSubcategoriesProdects);
 router.get("/", productController.getProducts);
 router.get("/active", productController.getActiveProdects);
 router.get("/:id", productController.produect);

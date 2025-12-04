@@ -71,12 +71,11 @@ exports.guestOrder = async (req, res) => {
     // Generate WhatsApp message
     const whatsappMsg = `اهلا بكم، لدي طلب جديد عبر موقع وصل wsal:
 - المنتج: ${product}
-- Quantity: ${quantity}
-- Name: ${name}
-- Phone: ${phone}
--finalPrice ${finalPrice}
-- Note: ${note}`;
-
+- عدد: ${quantity}
+- الاسم: ${name}
+- الهاتف: ${phone}
+- السعر النهائي: ${finalPrice}
+- ملاحظة: ${note}`;
     const encodedMsg = encodeURIComponent(whatsappMsg);
 
     return res.json({
