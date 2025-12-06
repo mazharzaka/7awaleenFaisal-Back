@@ -17,8 +17,34 @@ exports.createProduct = async (req, res) => {
 };
 exports.getProducts = async (req, res) => {
   try {
-    const products = await Product.find();
-    res.status(200).json(products);
+    const { category, subCategory, minPrice, maxPrice, search } = req.query;
+    let filter = { Isdeleted: false };
+
+    if (category) {
+      filter.category = category;
+    }
+
+    if (search) {
+      filter.search = search;
+    }
+
+    if (subCategory) {
+      filter.subCategory = subCategory;
+    }
+
+    // price filter
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = Number(minPrice);
+      if (maxPrice) filter.price.$lte = Number(maxPrice);
+    }
+
+    const products = await Product.find(filter);
+
+    res.status(200).json({
+      count: products.length,
+      products,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
