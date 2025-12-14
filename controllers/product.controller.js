@@ -50,10 +50,13 @@ exports.getProducts = async (req, res) => {
   }
 };
 exports.deleteProductById = async (req, res) => {
-  const { data } = req.body;
+  const { id } = req.query;
 
   try {
-    await Product.findByIdAndUpdate(data, { Isdeleted: true }, { new: true });
+    if (!id) {
+      return res.status(400).json({ error: "Product ID is required" });
+    }
+    await Product.findByIdAndUpdate(id, { Isdeleted: true }, { new: true });
 
     res.status(200).json({ deleted: "is deleted" });
   } catch (err) {

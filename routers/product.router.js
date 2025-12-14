@@ -17,8 +17,8 @@ router.get("/", productController.getProducts);
 router.get("/active", productController.getActiveProdects);
 router.get("/:id", productController.produect);
 router.post("/search", productController.searchProduct);
-router.post(
-  "/del",
+router.delete(
+  "/",
   auth.verifyToken,
   role.checkRole(["admin"]),
   productController.deleteProductById
