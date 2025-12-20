@@ -11,6 +11,8 @@ router.post(
   role.checkRole(["admin"]),
   productController.createProduct
 );
+router.get("/advertised", productController.getAdvertisingProdects);
+
 router.get("/categories", productController.getcategoriesProdects);
 router.get("/subcategories", productController.getSubcategoriesProdects);
 router.get("/", productController.getProducts);
@@ -31,13 +33,9 @@ router.post(
   productController.Advertising
 );
 router.post(
-  "/advertised",
-
-  productController.getAdvertisingProdects
-);
-router.post(
-  "/edit",
+  "/edit/:id",
   auth.verifyToken,
+  upload.array("productImage", 4),
   role.checkRole(["admin"]),
   productController.updateProductById
 );

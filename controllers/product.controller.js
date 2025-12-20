@@ -7,8 +7,7 @@ exports.createProduct = async (req, res) => {
     if (!req.body.storeId) {
       req.body.storeId = null;
     }
-    console.log(req.body);
-    console.log("MODEL:", Product);
+
     const product = await Product.create(req.body);
     res.status(201).json(product);
   } catch (err) {
@@ -50,11 +49,15 @@ exports.getProducts = async (req, res) => {
   }
 };
 exports.deleteProductById = async (req, res) => {
-  const { id } = req.query;
+  const { id, deleted } = req.query;
 
   try {
     if (!id) {
       return res.status(400).json({ error: "Product ID is required" });
+    }
+    if (deleted) {
+      await Product.findByIdAndDelete(id);
+      res.status(200).json({ deleted: "is deleted from database" });
     }
     await Product.findByIdAndUpdate(id, { Isdeleted: true }, { new: true });
 
@@ -81,45 +84,71 @@ exports.Stock = async (req, res) => {
   }
 };
 exports.Advertising = async (req, res) => {
-  const { data } = req.body;
-
+  const { id } = req.query;
+  console.log(id);
   try {
-    const test = await Product.find({ _id: data });
-
-    const newIsstock = test[0].Isadvertising;
+    const produectById = await Product.findById(id);
+    console.log(produectById);
+    const newIsstock = produectById.Isadvertising;
     await Product.findByIdAndUpdate(
-      data,
+      id,
       { Isadvertising: !newIsstock },
       { new: true }
     );
-    res.status(200).json({ stock: "is stock" });
+    res.status(200).json({ stock: "is advertise" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 exports.updateProductById = async (req, res) => {
-  const { id, name, desc, price, imageURL } = req.body;
-
-  const updateFields = { name, desc, price, imageURL };
-
-  if (imageURL) {
-    req.body.imageURL = req.file.path;
-  }
-  const filteredFields = Object.fromEntries(
-    Object.entries(updateFields).filter(
-      ([_, value]) => value !== undefined && value !== ""
-    )
-  );
-
   try {
+    const { id } = req.params;
+
+    const {
+      name,
+      desc,
+      price,
+      category,
+      subCategory,
+      sale,
+      Isadvertising,
+      storeId,
+    } = req.body;
+
+    const updateFields = {
+      name,
+      desc,
+      category,
+      subCategory,
+      Isadvertising,
+    };
+
+    if (price !== undefined) updateFields.price = Number(price);
+    if (sale !== undefined) updateFields.sale = Number(sale);
+    if (storeId !== undefined) updateFields.storeId = storeId;
+
+    // ✅ الصور
+    if (req.files && req.files.length > 0) {
+      updateFields.imageURL = req.files.map((file) => file.path);
+    }
+
+    // إزالة القيم الفاضية
+    const filteredFields = Object.fromEntries(
+      Object.entries(updateFields).filter(
+        ([_, value]) => value !== undefined && value !== ""
+      )
+    );
+
     const product = await Product.findByIdAndUpdate(id, filteredFields, {
       new: true,
     });
+
     res.status(200).json(product);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 exports.produect = async (req, res) => {
   const { id } = req.params;
 
@@ -147,7 +176,7 @@ exports.getSubcategoriesProdects = async (req, res) => {
     label: item,
     value: item,
   }));
-  console.log(categoriesData[category].subcategories);
+  // console.log(categoriesData[category].subcategories);
   try {
     res.status(200).json(categories);
   } catch (err) {
@@ -168,11 +197,14 @@ exports.getActiveProdects = async (req, res) => {
 };
 exports.getAdvertisingProdects = async (req, res) => {
   try {
-    const Allproducts = await Product.find();
+    const Allproducts = await Product.find({
+      Isadvertising: true,
+      Isdeleted: false,
+    });
     // console.log("Allproducts", Allproducts);
 
-    const products = Allproducts.filter((e) => e.Isadvertising === true);
-    res.status(200).json(products);
+    // const products = Allproducts.filter((e) => e.Isadvertising === true);
+    res.status(200).json(Allproducts);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
