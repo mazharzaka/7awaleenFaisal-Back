@@ -15,4 +15,10 @@ Router.get(
   checkRole(["admin"]),
   orderController.getAllOrdersGeust
 );
+Router.post(
+  "/guest/status",
+  auth.verifyToken,
+  checkRole(["admin"]),
+  orderController.updateGuestOrderStatus
+);
 module.exports = Router;

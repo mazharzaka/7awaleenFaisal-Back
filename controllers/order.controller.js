@@ -89,7 +89,9 @@ exports.guestOrder = async (req, res) => {
 };
 exports.getAllOrdersGeust = async (req, res) => {
   try {
-    const orders = await WOrder.find().populate("productId");
+    const orders = await WOrder.find()
+      .sort({ createdAt: -1 })
+      .populate("productId");
 
     res.status(200).json(orders);
   } catch (err) {
@@ -97,6 +99,21 @@ exports.getAllOrdersGeust = async (req, res) => {
   }
 };
 
+exports.updateGuestOrderStatus = async (req, res) => {
+  try {
+    const { orderId, status } = req.body;
+    const order = await WOrder.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true }
+    ).populate("productId");
+    if (!order) return res.status(404).json({ error: "Order not found" });
+
+    res.status(200).json(order);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 // Update order status
 exports.updateOrderStatus = async (req, res) => {
   try {

@@ -13,6 +13,11 @@ const whatsappSchema = new mongoose.Schema(
     quantity: Number,
     note: String,
     finalPrice: Number,
+    status: {
+      type: String,
+      enum: ["new", "contacted", "done", "rejected"],
+      default: "new",
+    },
   },
   { timestamps: true }
 );
