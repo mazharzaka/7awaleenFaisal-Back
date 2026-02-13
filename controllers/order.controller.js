@@ -1,26 +1,54 @@
 const Order = require("../models/order.model");
 const WOrder = require("../models/whatsapp");
+const { generateWhatsAppMessage, generateWhatsAppLink } = require("../utils/whatsapp");
 const dotenv = require("dotenv");
 dotenv.config();
+
 // Checkout / Create Order
 exports.checkOut = async (req, res) => {
-  const { userId, storeId, items, total, address, note, deliveryPartnerId } =
-    req.body;
+  const {
+    userId,
+    storeId,
+    items,
+    total,
+    address,
+    note,
+    deliveryPartnerId,
+    paymentMethod,
+    customerInfo,
+  } = req.body;
 
   try {
     const order = new Order({
-      userId,
+      userId: userId || null, // Allow guest orders
       storeId,
       items, // [{ productId, qty, price }]
       total,
       address,
       note,
       deliveryPartnerId, // optional
+      paymentMethod: paymentMethod || "whatsapp",
+      paymentStatus: paymentMethod === "cash" ? "pending" : "pending",
+      customerInfo: customerInfo || {}, // Required for guest orders
     });
 
     await order.save();
 
-    res.status(201).json(order);
+    // Populate items with product details for WhatsApp message
+    await order.populate("items.productId");
+
+    // Generate WhatsApp message and link
+    const whatsappMsg = generateWhatsAppMessage(order);
+    const whatsappLink = generateWhatsAppLink(
+      process.env.MYPHONE || "201000000000",
+      whatsappMsg
+    );
+
+    res.status(201).json({
+      success: true,
+      order,
+      whatsappLink,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -68,20 +96,31 @@ exports.guestOrder = async (req, res) => {
       finalPrice,
     });
 
-    // Generate WhatsApp message
-    const whatsappMsg = `اهلا بكم، لدي طلب جديد عبر موقع وصل wsal:
-- المنتج: ${product}
-- عدد: ${quantity}
-- الاسم: ${name}
-- الهاتف: ${phone}
-- السعر النهائي: ${finalPrice}
-- ملاحظة: ${note}`;
-    const encodedMsg = encodeURIComponent(whatsappMsg);
+    // Generate WhatsApp message using utility
+    const { generateWhatsAppLink } = require("../utils/whatsapp");
+    const whatsappMsg = `السلام عليكم، لدي طلب جديد عبر موقع 7awaleen:
+
+📦 المنتج: ${product}
+الكمية: ${quantity}
+السعر: ${price.toLocaleString('ar-EG')} جنيه
+
+👤 معلومات العميل:
+الاسم: ${name}
+الهاتف: ${phone}
+
+💰 السعر النهائي: ${finalPrice.toLocaleString('ar-EG')} جنيه
+
+${note ? `📝 ملاحظات: ${note}` : ''}`;
+
+    const whatsappLink = generateWhatsAppLink(
+      process.env.MYPHONE || "201000000000",
+      whatsappMsg
+    );
 
     return res.json({
       success: true,
       order,
-      whatsappLink: `https://wa.me/${process.env.MYPHONE}?text=${encodedMsg}`,
+      whatsappLink,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -8,7 +8,7 @@ router.post(
   "/",
   auth.verifyToken,
   upload.array("productImage", 4),
-  role.checkRole(["admin"]),
+  auth.isAdmin,
   productController.createProduct
 );
 router.get("/advertised", productController.getAdvertisingProdects);
@@ -22,21 +22,21 @@ router.post("/search", productController.searchProduct);
 router.delete(
   "/",
   auth.verifyToken,
-  role.checkRole(["admin"]),
+  auth.isAdmin,
   productController.deleteProductById
 );
-router.post("/stock", role.checkRole(["admin"]), productController.Stock);
+router.post("/stock", auth.verifyToken, auth.isAdmin, productController.Stock);
 router.post(
   "/advertising",
   auth.verifyToken,
-  role.checkRole(["admin"]),
+  auth.isAdmin,
   productController.Advertising
 );
 router.post(
   "/edit/:id",
   auth.verifyToken,
   upload.array("productImage", 4),
-  role.checkRole(["admin"]),
+  auth.isAdmin,
   productController.updateProductById
 );
 

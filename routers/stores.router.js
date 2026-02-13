@@ -8,7 +8,7 @@ router.post(
   "/",
   auth.verifyToken,
   upload.single("storeImage"),
-  role.checkRole(["admin"]),
+  auth.isAdmin,
   storeController.createStore
 );
 router.get("/", storeController.getStores);
@@ -17,26 +17,26 @@ router.get("/one", storeController.getStoreById);
 router.post(
   "/del",
   auth.verifyToken,
-  role.checkRole(["admin"]),
+  auth.isAdmin,
   storeController.deleteStore
 );
 router.post(
   "/sub",
   auth.verifyToken,
-  role.checkRole(["admin"]),
+  auth.isAdmin,
   storeController.toggleSubscription
 );
 router.get(
   "/sub",
   auth.verifyToken,
-  role.checkRole(["admin"]),
+  auth.isAdmin,
   storeController.getSubscribedStores
 );
 
 router.post(
   "/edit",
   auth.verifyToken,
-  role.checkRole(["admin"]),
+  auth.isAdmin,
   storeController.updateStore
 );
 

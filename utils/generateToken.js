@@ -3,6 +3,10 @@ const dotenv = require("dotenv");
 dotenv.config();
 const secret = process.env.SECRET;
 
-exports.generateToken = (user) => {
-  return jsonwebtoken.sign({ user }, secret, { expiresIn: "24h" });
+exports.generateAccessToken = (user) => {
+  return jsonwebtoken.sign({ user }, secret, { expiresIn: "15m" });
+};
+
+exports.generateRefreshToken = (user) => {
+  return jsonwebtoken.sign({ user }, secret, { expiresIn: "7d" });
 };

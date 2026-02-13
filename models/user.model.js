@@ -13,11 +13,16 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: false,
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
     phone: {
       type: String,
-      required: true,
+      required: false,
     },
     address: {
       type: String,
@@ -25,8 +30,16 @@ const userSchema = new mongoose.Schema(
     },
     userType: {
       type: String,
-      enum: ["customer", "admin", "delivery", "storeOwner"],
+      enum: ["customer", "admin", "vendor", "delivery", "storeOwner"],
       default: "customer",
+    },
+    otp: {
+      type: String,
+      required: false,
+    },
+    otpExpires: {
+      type: Date,
+      required: false,
     },
   },
   {

@@ -5,7 +5,7 @@ const orderSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      required: true,
+      required: false, // Allow guest orders
     },
     storeId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -28,8 +28,29 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "accepted", "delivering", "delivered"],
+      enum: ["pending", "accepted", "delivering", "delivered", "cancelled"],
       default: "pending",
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["whatsapp", "cash", "card", "wallet"],
+      default: "whatsapp",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "processing", "completed", "failed"],
+      default: "pending",
+    },
+    customerInfo: {
+      name: {
+        type: String,
+        required: true,
+      },
+      phone: {
+        type: String,
+        required: true,
+      },
+      address: String,
     },
     deliveryPartnerId: {
       type: mongoose.Schema.Types.ObjectId,
