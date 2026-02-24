@@ -5,7 +5,7 @@ const orderSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      required: false, // Allow guest orders
+      required: true, // Allow guest orders
     },
     storeId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -28,8 +28,16 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "accepted", "delivering", "delivered", "cancelled"],
-      default: "pending",
+      enum: [
+        "placed",
+        "confirmed",
+        "preparing",
+        "out_for_delivery",
+        "delivered",
+        "cancelled",
+        "refunded",
+      ],
+      default: "placed",
     },
     paymentMethod: {
       type: String,
@@ -40,6 +48,10 @@ const orderSchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "processing", "completed", "failed"],
       default: "pending",
+    },
+    paymentDetails: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
     customerInfo: {
       name: {

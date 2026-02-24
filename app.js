@@ -5,6 +5,8 @@ const userRouter = require("./routers/user.router");
 const productRouter = require("./routers/product.router");
 const orderRouter = require("./routers/order.router");
 const storesRouter = require("./routers/stores.router");
+const cartRouter = require("./routers/cart.router");
+const dashboardRouter = require("./routers/dashboard.router");
 const cors = require("cors");
 
 const app = express();
@@ -25,6 +27,8 @@ app.use("/user", userRouter);
 app.use("/product", productRouter);
 app.use("/order", orderRouter);
 app.use("/store", storesRouter);
+app.use("/cart", cartRouter);
+app.use("/dashboard", dashboardRouter);
 
 app.listen(process.env.PORT || 5000, () =>
   console.log(`server started at port: ${process.env.PORT || 5000}`)

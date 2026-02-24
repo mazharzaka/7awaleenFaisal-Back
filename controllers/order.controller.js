@@ -7,7 +7,6 @@ dotenv.config();
 // Checkout / Create Order
 exports.checkOut = async (req, res) => {
   const {
-    userId,
     storeId,
     items,
     total,
@@ -17,7 +16,8 @@ exports.checkOut = async (req, res) => {
     paymentMethod,
     customerInfo,
   } = req.body;
-
+  
+  const userId = req.user ? req.user.userId : req.body.userId;
   try {
     const order = new Order({
       userId: userId || null, // Allow guest orders
@@ -57,8 +57,9 @@ exports.checkOut = async (req, res) => {
 // Get orders of a specific user
 exports.getMyOrders = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const userId = req.user ? req.user.userId : req.body.userId;
     const orders = await Order.find({ userId })
+      .sort({ createdAt: -1 })
       .populate("items.productId")
       .populate("storeId");
 
@@ -68,13 +69,30 @@ exports.getMyOrders = async (req, res) => {
   }
 };
 
+// Get single order by ID
+exports.getOrderById = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate("items.productId")
+      .populate("storeId");
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.status(200).json(order);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // Get all orders (admin)
 exports.getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
+      .sort({ createdAt: -1 })
       .populate("items.productId")
-      .populate("storeId")
-      .populate("userId");
+      .populate("storeId");
 
     res.status(200).json(orders);
   } catch (err) {
@@ -84,7 +102,7 @@ exports.getAllOrders = async (req, res) => {
 
 exports.guestOrder = async (req, res) => {
   try {
-    const { name, phone, productId, price, product, quantity, note } = req.body;
+    const { name, phone, productId, price, product, quantity, note, paymentMethod } = req.body;
 
     let finalPrice = price * quantity;
     const order = await WOrder.create({
@@ -94,6 +112,7 @@ exports.guestOrder = async (req, res) => {
       quantity,
       note,
       finalPrice,
+      paymentMethod: paymentMethod || "whatsapp",
     });
 
     // Generate WhatsApp message using utility

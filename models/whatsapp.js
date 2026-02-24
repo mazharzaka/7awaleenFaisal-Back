@@ -18,6 +18,10 @@ const whatsappSchema = new mongoose.Schema(
       enum: ["new", "contacted", "done", "rejected"],
       default: "new",
     },
+    paymentMethod: {
+      type: String,
+      default: "whatsapp",
+    },
   },
   { timestamps: true }
 );

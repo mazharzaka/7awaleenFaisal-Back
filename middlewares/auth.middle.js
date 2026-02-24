@@ -4,7 +4,6 @@ exports.verifyToken = (req, res, next) => {
     if (!token) return res.status(401).json({ error: "Access denied! Please provide a token" });
     try {
         const decoded = jsonwebtoken.verify(token, process.env.SECRET);
-        // console.log(decoded);
         
         req.user = decoded.user;
         next();

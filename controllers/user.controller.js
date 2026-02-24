@@ -261,3 +261,65 @@ exports.verifyOtp = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.getMe = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user.userId).select("-password");
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, phone, address } = req.body;
+    const user = await userModel.findById(req.user.userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
+    if (address) user.address = address;
+
+    await user.save();
+
+    const userData = user.toObject();
+    delete userData.password;
+
+    res.status(200).json(userData);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updatePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const user = await userModel.findById(req.user.userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // If user has a password (not a Google login user without password)
+    if (user.password) {
+      const isMatch = await hashing.comparePassword(oldPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ error: "Old password does not match" });
+      }
+    }
+
+    user.password = await hashing.hashPassword(newPassword);
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
