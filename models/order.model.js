@@ -29,9 +29,12 @@ const orderSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
+        "searching",
         "placed",
+        "accepted",
         "confirmed",
         "preparing",
+        "picked_up",
         "out_for_delivery",
         "delivered",
         "cancelled",
@@ -73,6 +76,16 @@ const orderSchema = new mongoose.Schema(
     },
     note: {
       type: String,
+    },
+    driverId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
+    deliveryProofUrl: {
+      type: String,
+    },
+    acceptedAt: {
+      type: Date,
     },
   },
   {

@@ -26,6 +26,20 @@ exports.createUser = async (req, res) => {
     const hashedPassword = await hashing.hashPassword(password);
 
     // إنشاء المستخدم
+    let role = "CUSTOMER";
+    let isApproved = true; // Customers are approved by default
+    let accountStatus = "APPROVED";
+
+    if (userType === "delivery" || userType === "DRIVER") {
+      role = "DRIVER";
+      isApproved = false;
+      accountStatus = "PENDING";
+    } else if (userType === "admin") {
+      role = "ADMIN";
+    } else if (userType === "vendor" || userType === "storeOwner") {
+      role = "ADMIN"; // Or a specific VENDOR role if you want to add it later
+    }
+
     const user = await userModel.create({
       name,
       email,
@@ -34,6 +48,9 @@ exports.createUser = async (req, res) => {
       formattedAddress,
       location,
       userType, 
+      role,
+      isApproved,
+      accountStatus,
     });
 
     // حذف الباسورد من response
@@ -79,12 +96,20 @@ exports.googleLogin = async (req, res) => {
       userId: user._id,
       name: user.name,
       userType: user.userType,
+      role: user.role,
+      isApproved: user.isApproved,
+      accountStatus: user.accountStatus,
+      isOnline: user.isOnline,
     });
 
     const refreshToken = generateToken.generateRefreshToken({
       userId: user._id,
       name: user.name,
       userType: user.userType,
+      role: user.role,
+      isApproved: user.isApproved,
+      accountStatus: user.accountStatus,
+      isOnline: user.isOnline,
     });
 
     res.status(200).json({ accessToken, refreshToken, user });
@@ -248,11 +273,19 @@ exports.verifyOtp = async (req, res) => {
         userId: user._id,
         name: user.name,
         userType: user.userType,
+        role: user.role,
+        isApproved: user.isApproved,
+        accountStatus: user.accountStatus,
+        isOnline: user.isOnline,
     });
      const refreshToken = generateToken.generateRefreshToken({
         userId: user._id,
         name: user.name,
         userType: user.userType,
+        role: user.role,
+        isApproved: user.isApproved,
+        accountStatus: user.accountStatus,
+        isOnline: user.isOnline,
     });
 
     res.status(200).json({ message: "OTP verified successfully", accessToken: token, refreshToken, user });

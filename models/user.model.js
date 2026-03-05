@@ -30,8 +30,26 @@ const userSchema = new mongoose.Schema(
     },
     userType: {
       type: String,
-      enum: ["customer", "admin", "vendor", "delivery", "storeOwner"],
+      enum: ["customer", "admin", "vendor", "delivery", "storeOwner", "DRIVER"],
       default: "customer",
+    },
+    role: {
+      type: String,
+      enum: ["CUSTOMER", "DRIVER", "ADMIN"],
+      default: "CUSTOMER",
+    },
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
+    accountStatus: {
+      type: String,
+      enum: ["PENDING", "APPROVED", "REJECTED"],
+      default: "PENDING",
+    },
+    isOnline: {
+      type: Boolean,
+      default: false,
     },
     otp: {
       type: String,
