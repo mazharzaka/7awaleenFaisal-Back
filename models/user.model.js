@@ -59,10 +59,27 @@ const userSchema = new mongoose.Schema(
       type: Date,
       required: false,
     },
+    transportType: {
+      type: String,
+      enum: ["BICYCLE", "SCOOTER"],
+      required: false,
+    },
+    nationalIdFront: {
+      type: String,
+      required: false,
+    },
+    nationalIdBack: {
+      type: String,
+      required: false,
+    },
+    personalPhoto: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 module.exports = mongoose.model("user", userSchema);

@@ -5,18 +5,51 @@ const deliveryController = require("../controllers/delivery.controller");
 const Router = express.Router();
 
 // Allow drivers to accept searching orders
-Router.post("/accept", verifyToken, isDriver, deliveryController.acceptOrder);
+Router.post(
+  "/accept-order",
+  verifyToken,
+  isDriver,
+  deliveryController.acceptOrder,
+);
 
 // Allow drivers to upload proof and complete orders
-Router.post("/complete", verifyToken, isDriver, deliveryController.completeDelivery);
+Router.post(
+  "/complete",
+  verifyToken,
+  isDriver,
+  deliveryController.completeDelivery,
+);
 
 // Get orders searching for drivers
-Router.get("/orders/available", verifyToken, isDriver, deliveryController.getAvailableOrders);
+Router.get(
+  "/available-orders",
+  verifyToken,
+  isDriver,
+  deliveryController.getAvailableOrders,
+);
 
 // Get orders assigned to the current driver
-Router.get("/orders/active", verifyToken, isDriver, deliveryController.getActiveOrders);
+Router.get(
+  "/my-trips",
+  verifyToken,
+  isDriver,
+  deliveryController.getActiveOrders,
+);
 
 // Toggle driver online status
-Router.post("/status-toggle", verifyToken, isDriver, deliveryController.toggleOnlineStatus);
+Router.post(
+  "/status",
+  verifyToken,
+  isDriver,
+  deliveryController.toggleOnlineStatus,
+);
+
+// Update order status (e.g. "picked_up")
+Router.patch(
+  "/order-status",
+  verifyToken,
+  isDriver,
+  deliveryController.updateOrderStatus,
+);
 
 module.exports = Router;

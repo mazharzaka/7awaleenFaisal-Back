@@ -3,6 +3,7 @@ const sendEmail = require("../utils/email");
 const userModel = require("../models/user.model");
 const hashing = require("../utils/hash");
 const generateToken = require("../utils/generateToken");
+const { driverRegistrationSchema } = require("../validators/driver.validator");
 
 exports.createUser = async (req, res) => {
   try {
@@ -30,11 +31,7 @@ exports.createUser = async (req, res) => {
     let isApproved = true; // Customers are approved by default
     let accountStatus = "APPROVED";
 
-    if (userType === "delivery" || userType === "DRIVER") {
-      role = "DRIVER";
-      isApproved = false;
-      accountStatus = "PENDING";
-    } else if (userType === "admin") {
+    if (userType === "admin") {
       role = "ADMIN";
     } else if (userType === "vendor" || userType === "storeOwner") {
       role = "ADMIN"; // Or a specific VENDOR role if you want to add it later
@@ -47,7 +44,7 @@ exports.createUser = async (req, res) => {
       phone,
       formattedAddress,
       location,
-      userType, 
+      userType,
       role,
       isApproved,
       accountStatus,
@@ -59,6 +56,76 @@ exports.createUser = async (req, res) => {
 
     res.status(201).json(userData);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.registerDriver = async (req, res) => {
+  try {
+    // Validate request body using Zod
+    const validatedData = driverRegistrationSchema.parse(req.body);
+
+    const { name, email, password, phone, formattedAddress, transportType } =
+      validatedData;
+
+    // Check if email already exists
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: "Email already exists" });
+    }
+
+    // Extract uploaded files
+    const nationalIdFront =
+      req.files && req.files["nationalIdFront"]
+        ? req.files["nationalIdFront"][0].path
+        : null;
+    const nationalIdBack =
+      req.files && req.files["nationalIdBack"]
+        ? req.files["nationalIdBack"][0].path
+        : null;
+    const personalPhoto =
+      req.files && req.files["personalPhoto"]
+        ? req.files["personalPhoto"][0].path
+        : null;
+
+    if (!nationalIdFront || !nationalIdBack || !personalPhoto) {
+      return res.status(400).json({
+        error:
+          "All required documents (ID front, ID back, personal photo) must be uploaded.",
+      });
+    }
+
+    // Hash password
+    const hashedPassword = await hashing.hashPassword(password);
+
+    // Create user
+    const user = await userModel.create({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      formattedAddress,
+      userType: "delivery",
+      role: "DRIVER",
+      isApproved: false,
+      accountStatus: "PENDING",
+      transportType,
+      nationalIdFront,
+      nationalIdBack,
+      personalPhoto,
+    });
+
+    const userData = user.toObject();
+    delete userData.password;
+
+    res.status(201).json(userData);
+  } catch (err) {
+    if (err.name === "ZodError") {
+      console.log(err);
+      return res
+        .status(400)
+        .json({ error: "Validation failed", details: err.errors });
+    }
     res.status(500).json({ error: err.message });
   }
 };
@@ -127,38 +194,45 @@ exports.login = async (req, res) => {
     }
 
     if (!user.password && user.googleId) {
-         return res.status(400).json({ error: "Please login with Google" });
+      return res.status(400).json({ error: "Please login with Google" });
     }
-    
+
     const isMatch = await hashing.comparePassword(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ error: "Password does not match" });
     }
-    
+
     // 2FA Flow: Generate and Send OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     user.otp = otp;
     user.otpExpires = Date.now() + 10 * 60 * 1000;
     await user.save();
-    
+
     const message = `Your OTP for login is ${otp}. It expires in 10 minutes.`;
     console.log(message);
-    
+
     // Send Email
     try {
-        await sendEmail({
-            email: user.email,
-            subject: "Your Login OTP",
-            message,
-            html: `<h1>Your Login OTP is ${otp}</h1><p>It expires in 10 minutes.</p>`
-        });
-        // Return success but NO tokens yet
-        res.status(200).json({ message: "OTP sent to email. Please verify.", requireOtp: true, email: user.email });
+      await sendEmail({
+        email: user.email,
+        subject: "Your Login OTP",
+        message,
+        html: `<h1>Your Login OTP is ${otp}</h1><p>It expires in 10 minutes.</p>`,
+      });
+      // Return success but NO tokens yet
+      res.status(200).json({
+        message: "OTP sent to email. Please verify.",
+        requireOtp: true,
+        email: user.email,
+      });
     } catch (emailError) {
-        user.otp = undefined;
-        user.otpExpires = undefined;
-        await user.save();
-        res.status(500).json({ error: "Email could not be sent", details: emailError.message });
+      user.otp = undefined;
+      user.otpExpires = undefined;
+      await user.save();
+      res.status(500).json({
+        error: "Email could not be sent",
+        details: emailError.message,
+      });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -208,31 +282,33 @@ exports.sendOtp = async (req, res) => {
 
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    
+
     // Set OTP and expiry (10 minutes)
     user.otp = otp;
     user.otpExpires = Date.now() + 10 * 60 * 1000;
     await user.save();
 
     const message = `Your OTP is ${otp}. It expires in 10 minutes.`;
-    
+
     // Send Email
     const sendEmail = require("../utils/email");
     try {
-        await sendEmail({
-            email: user.email,
-            subject: "Your OTP Code",
-            message,
-            html: `<h1>Your OTP is ${otp}</h1><p>It expires in 10 minutes.</p>`
-        });
-        res.status(200).json({ message: "OTP sent successfully" });
+      await sendEmail({
+        email: user.email,
+        subject: "Your OTP Code",
+        message,
+        html: `<h1>Your OTP is ${otp}</h1><p>It expires in 10 minutes.</p>`,
+      });
+      res.status(200).json({ message: "OTP sent successfully" });
     } catch (emailError) {
-        user.otp = undefined;
-        user.otpExpires = undefined;
-        await user.save();
-        res.status(500).json({ error: "Email could not be sent", details: emailError.message });
+      user.otp = undefined;
+      user.otpExpires = undefined;
+      await user.save();
+      res.status(500).json({
+        error: "Email could not be sent",
+        details: emailError.message,
+      });
     }
-
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -248,7 +324,7 @@ exports.verifyOtp = async (req, res) => {
     }
 
     if (!user.otp || !user.otpExpires) {
-         return res.status(400).json({ error: "OTP not set or expired" });
+      return res.status(400).json({ error: "OTP not set or expired" });
     }
 
     if (user.otp !== otp) {
@@ -265,31 +341,35 @@ exports.verifyOtp = async (req, res) => {
     await user.save();
 
     // Optionally generate token here or just return success
-    // If this is for login, we should generate tokens. 
+    // If this is for login, we should generate tokens.
     // If for just verification, return success.
     // Let's assume it logs the user in for now.
-    
+
     const token = generateToken.generateAccessToken({
-        userId: user._id,
-        name: user.name,
-        userType: user.userType,
-        role: user.role,
-        isApproved: user.isApproved,
-        accountStatus: user.accountStatus,
-        isOnline: user.isOnline,
+      userId: user._id,
+      name: user.name,
+      userType: user.userType,
+      role: user.role,
+      isApproved: user.isApproved,
+      accountStatus: user.accountStatus,
+      isOnline: user.isOnline,
     });
-     const refreshToken = generateToken.generateRefreshToken({
-        userId: user._id,
-        name: user.name,
-        userType: user.userType,
-        role: user.role,
-        isApproved: user.isApproved,
-        accountStatus: user.accountStatus,
-        isOnline: user.isOnline,
+    const refreshToken = generateToken.generateRefreshToken({
+      userId: user._id,
+      name: user.name,
+      userType: user.userType,
+      role: user.role,
+      isApproved: user.isApproved,
+      accountStatus: user.accountStatus,
+      isOnline: user.isOnline,
     });
 
-    res.status(200).json({ message: "OTP verified successfully", accessToken: token, refreshToken, user });
-
+    res.status(200).json({
+      message: "OTP verified successfully",
+      accessToken: token,
+      refreshToken,
+      user,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
